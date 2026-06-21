@@ -1,0 +1,67 @@
+UGANDA FARM DECISION SUPPORT SYSTEM - MIGRATION INSTRUCTIONS
+====================================================================
+
+Since there are issues running commands in Trae's terminal environment, please run these commands MANUALLY in a FRESH Command Prompt or PowerShell window.
+
+
+---
+Step 1: Open a new terminal
+--------------------------------------------------------------------
+Press Win + X and select "Windows PowerShell" OR search for "cmd" to open a Command Prompt.
+
+
+Step 2: Navigate to the project folder
+--------------------------------------------------------------------
+cd C:\Users\MAGADA\Desktop\MJR\vscode
+
+
+Step 3: Activate the virtual environment
+--------------------------------------------------------------------
+For PowerShell:
+.\venv\Scripts\Activate.ps1
+
+OR if that doesn't work:
+.\.venv\Scripts\Activate.ps1
+
+
+Step 4: Create and apply the database migrations
+--------------------------------------------------------------------
+python manage.py makemigrations core
+python manage.py migrate
+
+
+Step 5: Seed the database with Ugandan crop and livestock data
+--------------------------------------------------------------------
+python manage.py seed_crops
+
+
+Step 6: Start the server
+--------------------------------------------------------------------
+python manage.py runserver
+
+
+Step 7: Open the system in your browser
+--------------------------------------------------------------------
+http://127.0.0.1:8000
+http://localhost:8000
+
+
+---
+Quick Troubleshooting
+--------------------------------------------------------------------
+- If you see errors, you don't see "core" in migrations, it's because the model changes haven't been detected yet. Make sure you're in the right folder!
+- If virtual environment not activating, try using the .venv folder instead of venv if available
+- If you forget to activate, just redo Step 3.
+
+
+---
+What's New in This Update
+--------------------------------------------------------------------
+1. Farmer type selection (smallholder or commercial)
+2. Livestock recommendations
+3. Soil analysis in recommendations
+4. Uganda-specific market price insights
+5. Weather analysis
+6. Local pest and disease management information
+7. Additional Ugandan locations (Kabale, Kasese, Iganga)
+8. Complete planting instructions for each crop

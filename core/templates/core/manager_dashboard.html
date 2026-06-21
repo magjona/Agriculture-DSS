@@ -1,0 +1,230 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success"><i class="fas fa-tasks me-2"></i>Admin Dashboard</h2>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'admin_add_farm' %}" class="btn btn-primary w-100">
+                <i class="fas fa-plus me-2"></i>Add Farm
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'add_crop' %}" class="btn btn-success w-100">
+                <i class="fas fa-plus me-2"></i>Add Crop
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'admin_add_recommendation' %}" class="btn btn-info w-100">
+                <i class="fas fa-plus me-2"></i>Add Recommendation
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ farmers.count }}</h3>
+                    <p class="mb-0">Farmers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ farms.count }}</h3>
+                    <p class="mb-0">Farms</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ crops.count }}</h3>
+                    <p class="mb-0">Crops</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3>{{ recommendations.count }}</h3>
+                    <p class="mb-0">Recommendations</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Crops Section -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-leaf me-2 text-success"></i>Manage Crops</h5>
+                    <a href="{% url 'add_crop' %}" class="btn btn-sm btn-success"><i class="fas fa-plus me-2"></i>New Crop</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Crop Name</th>
+                                    <th>Ideal Soil</th>
+                                    <th>Season</th>
+                                    <th>Preferred Regions</th>
+                                    <th>AI Knowledge</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for crop in crops %}
+                                <tr>
+                                    <td class="fw-bold text-dark">{{ crop.name }}</td>
+                                    <td><span class="badge bg-info text-dark">{{ crop.get_ideal_soil_display }}</span></td>
+                                    <td>{{ crop.planting_season }}</td>
+                                    <td>{{ crop.preferred_regions|default:"-" }}</td>
+                                    <td>
+                                        {% if crop.layman_knowledge %}
+                                            <span class="text-success small"><i class="fas fa-check-circle me-1"></i>Provided</span>
+                                        {% else %}
+                                            <span class="text-warning small"><i class="fas fa-exclamation-triangle me-1"></i>Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'edit_crop' crop.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{% url 'admin_delete_crop' crop.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No crops found. Add one to get started!</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farms Section -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-home me-2 text-primary"></i>Manage Farms</h5>
+                    <a href="{% url 'admin_add_farm' %}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-2"></i>New Farm</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Farm Name</th>
+                                    <th>Farmer</th>
+                                    <th>Location</th>
+                                    <th>Size (Acres)</th>
+                                    <th>Soil Type</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for farm in farms %}
+                                <tr>
+                                    <td class="fw-bold text-dark">{{ farm.name }}</td>
+                                    <td>{{ farm.farmer.user.username }}</td>
+                                    <td>{{ farm.farmer.location }}</td>
+                                    <td>{{ farm.size_acres }}</td>
+                                    <td><span class="badge bg-secondary">{{ farm.get_soil_type_display }}</span></td>
+                                    <td class="text-end">
+                                        <a href="{% url 'admin_edit_farm' farm.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{% url 'admin_delete_farm' farm.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No farms found!</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations by Location -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-warning"></i>Recommendations by Ugandan Location</h5>
+                    <a href="{% url 'admin_add_recommendation' %}" class="btn btn-sm btn-info"><i class="fas fa-plus me-2"></i>New Rec</a>
+                </div>
+                <div class="card-body">
+                    {% if recommendations_by_location %}
+                        {% for location, recs in recommendations_by_location.items %}
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h6 class="text-primary mb-3"><i class="fas fa-map-marker-alt me-2"></i>{{ location }} ({{ recs|length }})</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Farm</th>
+                                                <th>Crop</th>
+                                                <th>Date</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for rec in recs %}
+                                                <tr>
+                                                    <td>{{ rec.farm.name }}</td>
+                                                    <td>{{ rec.crop.name }}</td>
+                                                    <td>{{ rec.created_at|date:"Y-m-d" }}</td>
+                                                    <td class="text-end">
+                                                        <a href="{% url 'admin_edit_recommendation' rec.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <form method="post" action="{% url 'admin_delete_recommendation' rec.id %}" class="d-inline">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No recommendations yet!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

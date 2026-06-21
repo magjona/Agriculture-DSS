@@ -1,0 +1,242 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row g-0 rounded shadow-sm overflow-hidden" style="height: calc(100vh - 100px); background: white;">
+    <!-- Chat Sidebar (Sessions List) -->
+    <div class="col-md-4 col-lg-3 border-end d-flex flex-column bg-light" style="max-height: 100%;">
+        <div class="p-3 border-bottom">
+            <a href="{% url 'create_chat_session' %}" class="btn btn-success w-100 py-2">
+                <i class="fas fa-plus me-2"></i> New Conversation
+            </a>
+        </div>
+        <div class="flex-grow-1 overflow-y-auto p-2" style="max-height: calc(100% - 75px);">
+            <div class="list-group list-group-flush">
+                {% for s in sessions %}
+                <div class="d-flex justify-content-between align-items-center mb-1 rounded list-group-item list-group-item-action border-0 {% if s.id == active_session.id %}active bg-success text-white{% endif %}">
+                    <a href="{% url 'chat_session' s.id %}" class="text-decoration-none flex-grow-1 {% if s.id == active_session.id %}text-white{% else %}text-dark{% endif %} text-truncate me-2 py-1">
+                        <i class="far fa-comments me-2"></i> {{ s.title }}
+                    </a>
+                    {% if sessions|length > 1 %}
+                    <form method="post" action="{% url 'delete_chat_session' s.id %}" onsubmit="return confirm('Are you sure you want to delete this chat?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link p-0 {% if s.id == active_session.id %}text-white-50 hover-text-white{% else %}text-muted{% endif %}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">No conversations yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Window -->
+    <div class="col-md-8 col-lg-9 d-flex flex-column" style="height: 100%;">
+        <!-- Context Status Bar -->
+        <div class="bg-success bg-opacity-10 border-bottom p-3 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                    <i class="fas fa-robot fa-lg"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0 text-success fw-bold"> FarmDSS AI Advisor</h5>
+                    <p class="mb-0 text-muted small">
+                        <span class="badge bg-success bg-opacity-25 text-success me-1">Active Context</span>
+                        {{ farmer.location }} | 
+                        {% if farmer.farmer_type == 'smallholder' %}Subsistence{% else %}Commercial{% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="d-none d-lg-block">
+                <span class="small text-muted"><i class="fas fa-network-wired me-1"></i> Agri AI &bull; Active</span>
+            </div>
+        </div>
+
+        <!-- Django Flash Messages (e.g. Gemini unavailable) -->
+        {% if messages %}
+        <div class="px-3 pt-2">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show d-flex align-items-center py-2 rounded-3" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span>{{ message }}</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Chat History -->
+        <div class="flex-grow-1 overflow-y-auto p-3 bg-light bg-opacity-25" id="chat-messages" style="max-height: calc(100% - 150px);">
+            <div class="chat-welcome card border-0 bg-white shadow-sm p-4 mb-4 rounded-4">
+                <div class="card-body text-center">
+                    <h4 class="text-success fw-bold">Habari! I am Agri AI, your AI agricultural guide. 🌾</h4>
+                    <p class="text-muted">I have analyzed your farm profile. Ask me anything about crop cultivation, local pest control, planting timing, or fertilizing guidelines tailored to your farm!</p>
+                    
+                    <div class="row g-2 mt-3 justify-content-center">
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 prompt-suggest">
+                                What crops should I grow in my soil?
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 prompt-suggest">
+                                Organic pest control for Maize
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 prompt-suggest">
+                                Best fertilizing tips for Matooke
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 prompt-suggest">
+                                Can you translate this advice to Luganda?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% for msg in chat_messages %}
+            <div class="d-flex {% if msg.role == 'user' %}justify-content-end{% else %}justify-content-start{% endif %} mb-3">
+                <div class="rounded-4 p-3 shadow-sm {% if msg.role == 'user' %}bg-success text-white{% else %}bg-white border-start border-4 border-success text-dark{% endif %}" style="max-width: 80%; min-width: 250px;">
+                    <div class="d-flex justify-content-between align-items-center mb-1 border-bottom pb-1 {% if msg.role == 'user' %}border-white border-opacity-25{% else %}border-light{% endif %}">
+                        <span class="fw-bold small">
+                            {% if msg.role == 'user' %}
+                            <i class="fas fa-user-circle me-1"></i> You (Farmer)
+                            {% else %}
+                            <i class="fas fa-seedling me-1"></i> Agri AI (Advisor)
+                            {% endif %}
+                        </span>
+                        <span class="small opacity-75" style="font-size: 0.75rem;">
+                            {{ msg.timestamp|date:"H:i" }}
+                        </span>
+                    </div>
+                    <div class="message-content {% if msg.role == 'model' %}markdown-content{% endif %}" style="white-space: pre-wrap; font-size: 0.95rem;">{{ msg.content }}</div>
+                </div>
+            </div>
+            {% endfor %}
+            <!-- Thinking indicator (shown while waiting for AI) -->
+            <div id="thinking-indicator" class="d-none d-flex justify-content-start mb-3">
+                <div class="rounded-4 p-3 shadow-sm bg-white border-start border-4 border-success text-dark" style="max-width:80%; min-width:200px;">
+                    <span class="fw-bold small"><i class="fas fa-seedling me-1"></i> Agri AI(Advisor)</span>
+                    <div class="mt-2 text-muted small"><span class="spinner-border spinner-border-sm me-2" role="status"></span> Agri AI is thinking…</div>
+                </div>
+            </div>
+            <div id="scroll-anchor"></div>
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="p-3 border-top bg-white">
+            <form method="post" id="chat-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="message" id="message-input" class="form-control py-3 px-4 border-end-0 bg-light rounded-start-pill" placeholder="Type your agricultural question here..." required autocomplete="off">
+                    <button type="submit" class="btn btn-success px-4 rounded-end-pill" id="send-btn">
+                        <span id="btn-text">Send <i class="fas fa-paper-plane ms-1"></i></span>
+                        <span id="btn-spinner" class="d-none spinner-border spinner-border-sm" role="status"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Load Marked.js for markdown parsing in AI messages -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const messageContainer = document.getElementById("chat-messages");
+        const messageInput = document.getElementById("message-input");
+        const promptSuggestions = document.querySelectorAll(".prompt-suggest");
+        const chatForm = document.getElementById("chat-form");
+        const sendBtn = document.getElementById("send-btn");
+        const btnText = document.getElementById("btn-text");
+        const btnSpinner = document.getElementById("btn-spinner");
+
+        // Autoscroll chat history
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+
+        // Parse markdown formatting for Musa's messages
+        document.querySelectorAll(".markdown-content").forEach(function(el) {
+            const rawText = el.textContent;
+            try {
+                // Ensure marked parses lists and spacing correctly
+                el.innerHTML = marked.parse(rawText);
+            } catch (err) {
+                console.error("Markdown parsing failed", err);
+            }
+        });
+
+        // Set suggestion chip text to input field
+        promptSuggestions.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                messageInput.value = btn.textContent.trim();
+                messageInput.focus();
+            });
+        });
+
+        // Show spinner + thinking indicator on form submission
+        chatForm.addEventListener("submit", function(e) {
+            const userText = messageInput.value.trim();
+            if (!userText) return;
+
+            // Disable button & show spinner
+            sendBtn.disabled = true;
+            btnText.classList.add("d-none");
+            btnSpinner.classList.remove("d-none");
+
+            // Append user message bubble immediately for responsiveness
+            const userBubble = document.createElement("div");
+            userBubble.className = "d-flex justify-content-end mb-3";
+            userBubble.innerHTML = `
+                <div class="rounded-4 p-3 shadow-sm bg-success text-white" style="max-width:80%;min-width:200px;">
+                    <div class="d-flex justify-content-between align-items-center mb-1 border-bottom pb-1 border-white border-opacity-25">
+                        <span class="fw-bold small"><i class="fas fa-user-circle me-1"></i> You (Farmer)</span>
+                    </div>
+                    <div style="white-space:pre-wrap;font-size:0.95rem;">${userText.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+                </div>`;
+            const anchor = document.getElementById("scroll-anchor");
+            messageContainer.insertBefore(userBubble, anchor);
+
+            // Show thinking indicator
+            document.getElementById("thinking-indicator").classList.remove("d-none");
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        });
+    });
+</script>
+
+<style>
+    /* Styling elements for chat session */
+    .list-group-item.active {
+        background-color: #27ae60 !important;
+        border-color: #27ae60 !important;
+    }
+    .hover-text-white:hover {
+        color: white !important;
+    }
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #27ae60;
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+    .markdown-content ul, .markdown-content ol {
+        padding-left: 20px;
+        margin-bottom: 10px;
+    }
+    .markdown-content p {
+        margin-bottom: 8px;
+    }
+    .markdown-content code {
+        background-color: #f1f1f1;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+</style>
+{% endblock %}

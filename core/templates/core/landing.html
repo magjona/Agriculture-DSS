@@ -1,0 +1,105 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    {% if weather %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="weather-card text-white p-4 rounded shadow" data-aos="fade-down">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2"><i class="fas fa-cloud-sun me-2"></i>Current Weather in Uganda</h5>
+                        <p class="mb-2" style="font-size: 1.8rem; font-weight: bold;">{{ weather.temperature }}°C - {{ weather.condition|title }}</p>
+                        <p class="mb-0 small"><i class="fas fa-tint me-1"></i> Humidity: {{ weather.humidity }}% | <i class="fas fa-droplet me-1"></i> {{ weather.rainfall|title }} Rainfall</p>
+                        <p class="small mb-0 mt-2"><strong><i class="fas fa-seedling me-1"></i></strong> {{ weather.forecast }}</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="text-center">
+                            {% if weather.rainfall == 'heavy' %}
+                            <p style="font-size: 2.5rem; margin: 0;"><i class="fas fa-cloud-rain"></i></p>
+                            {% elif weather.rainfall == 'light' %}
+                            <p style="font-size: 2.5rem; margin: 0;"><i class="fas fa-sun"></i></p>
+                            {% else %}
+                            <p style="font-size: 2.5rem; margin: 0;"><i class="fas fa-cloud"></i></p>
+                            {% endif %}
+                            <p class="small text-white-50 mt-2">{{ weather.region }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% if weather_advisory %}
+                <hr class="my-3 border-white-50">
+                <p class="small mb-0"><i class="fas fa-lightbulb me-2"></i> <strong>Farm Advisory:</strong> {{ weather_advisory }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6" data-aos="fade-right">
+            <h1 class="display-5 fw-bold text-success mb-4">Empowering Smallholder Farmers</h1>
+            <p class="lead mb-4">AI-powered Decision Support System provides data-driven recommendations on crop selection, farm inputs, and sustainable practices to maximize your yield.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="{% url 'login' %}" class="btn btn-success btn-lg px-4 me-md-2">
+                    <i class="fas fa-rocket me-2"></i>Get Started
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6 mt-4 mt-lg-0" data-aos="fade-left">
+            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" class="img-fluid rounded shadow" alt="Farming">
+        </div>
+    </div>
+
+    <div class="row g-4 text-center">
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="p-4 bg-white rounded shadow-sm h-100">
+                <i class="fas fa-mobile-alt fa-3x text-success mb-3"></i>
+                <h4>Mobile-Ready</h4>
+                <p>Full responsive design works perfectly on any phone or tablet device.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="p-4 bg-white rounded shadow-sm h-100">
+                <i class="fas fa-brain fa-3x text-success mb-3"></i>
+                <h4>AI Recommendations</h4>
+                <p>Intelligent crop suggestions based on soil, weather, and water conditions.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="p-4 bg-white rounded shadow-sm h-100">
+                <i class="fas fa-cloud-sun fa-3x text-success mb-3"></i>
+                <h4>Weather Integration</h4>
+                <p>Real-time weather data to optimize planting and irrigation decisions.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 text-center mt-2">
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="p-4 bg-white rounded shadow-sm h-100">
+                <i class="fas fa-database fa-3x text-success mb-3"></i>
+                <h4>Data Storage</h4>
+                <p>Securely store all your farm and crop data in the cloud.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="p-4 bg-white rounded shadow-sm h-100">
+                <i class="fas fa-wifi-slash fa-3x text-success mb-3"></i>
+                <h4>Offline Access</h4>
+                <p>PWA technology allows access even without internet connection.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="p-4 bg-white rounded shadow-sm h-100">
+                <i class="fas fa-user-shield fa-3x text-success mb-3"></i>
+                <h4>User Accounts</h4>
+                <p>Personal accounts keep your farm data secure and synchronized.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5 pt-3">
+        <p class="text-muted">Install as an app on your Android device for the best experience!</p>
+    </div>
+</div>
+{% endblock %}

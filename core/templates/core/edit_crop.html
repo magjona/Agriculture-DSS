@@ -1,0 +1,78 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary btn-sm me-3">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <h2 class="mb-0 text-success">
+                            {% if crop %}<i class="fas fa-edit me-2"></i>Edit Crop{% else %}<i class="fas fa-plus-circle me-2"></i>Add New Crop{% endif %}
+                        </h2>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Crop Name</label>
+                                <input type="text" name="name" class="form-control" value="{{ crop.name|default:'' }}" required placeholder="e.g. Matooke">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ideal Soil Type</label>
+                                <select name="ideal_soil" class="form-select" required>
+                                    {% for value, label in soil_types %}
+                                        <option value="{{ value }}" {% if crop.ideal_soil == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Planting Season</label>
+                                <input type="text" name="planting_season" class="form-control" value="{{ crop.planting_season|default:'' }}" required placeholder="e.g. March - May">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Expected Yield (per acre)</label>
+                                <input type="text" name="expected_yield" class="form-control" value="{{ crop.expected_yield_per_acre|default:'' }}" required placeholder="e.g. 500 bunches">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Short Description</label>
+                                <textarea name="description" class="form-control" rows="2" required placeholder="General info about the crop...">{{ crop.description|default:'' }}</textarea>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success"><i class="fas fa-robot me-2"></i>AI Knowledge Base</h5>
+                                <hr>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Factors Favoring Growth (Uganda context)</label>
+                                <textarea name="factors_favouring" class="form-control" rows="3" placeholder="Explain soil, climate, and water factors using AI insights...">{{ crop.factors_favouring|default:'' }}</textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Layman Knowledge (Precise Explanation)</label>
+                                <textarea name="layman_knowledge" class="form-control" rows="4" placeholder="Explain to a farmer in simple terms how to succeed with this crop...">{{ crop.layman_knowledge|default:'' }}</textarea>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Preferred Ugandan Regions</label>
+                                <textarea name="preferred_regions" class="form-control" rows="2" placeholder="e.g. Kampala, Masaka, Mukono">{{ crop.preferred_regions|default:'' }}</textarea>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-save me-2"></i>{% if crop %}Update Crop Details{% else %}Create Crop & Knowledge{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

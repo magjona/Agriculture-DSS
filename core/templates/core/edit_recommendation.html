@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{% if recommendation %}Edit{% else %}Add{% endif %} Recommendation - Farm Decision Support{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">
+        {% if recommendation %}Edit{% else %}Add New{% endif %} Recommendation
+    </h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        {% if recommendation %}Update{% else %}Create{% endif %} Recommendation
+                    </button>
+                    <a href="{% url 'manager_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
